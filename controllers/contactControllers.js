@@ -1,6 +1,7 @@
-const { contactsService } = require("../models/contactService");
-const { HttpError, contactSchema } = require("../helpers");
+const contactsService = require("../models/contactService");
+const { HttpError } = require("../helpers");
 const { controllerWrapper } = require("../decorators");
+const { contactSchema } = require("../schemas/contactSchema");
 
 const getAllContacts = async (_, res) => {
   const result = await contactsService.listContacts();
@@ -19,7 +20,7 @@ const getContactById = async (req, res) => {
 const addContact = async (req, res) => {
   const { error } = contactSchema.validate(req.body);
   if (error) {
-    throw HttpError(400, error.message);
+    return HttpError(400, error.message);
   }
   const result = await contactsService.addContact(req.body);
   res.status(201).json(result);
@@ -28,7 +29,7 @@ const addContact = async (req, res) => {
 const updateContactById = async (req, res) => {
   const { error } = contactSchema.validate(req.body);
   if (error) {
-    throw HttpError(400, error.message);
+    return HttpError(400, error.message);
   }
   const { contactId } = req.params;
   const result = await contactsService.updateContact(contactId, req.body);
