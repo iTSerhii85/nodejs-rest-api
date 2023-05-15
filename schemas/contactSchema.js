@@ -16,4 +16,4 @@ const contactSchema = Joi.object({
     .messages({ "any.required": "missing required phone field" }),
 });
 
-module.exports = { contactSchema };
+module.exports = contactSchema;

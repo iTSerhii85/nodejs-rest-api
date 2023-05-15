@@ -1,7 +1,6 @@
 const contactsService = require("../models/contactService");
 const { HttpError } = require("../helpers");
 const { controllerWrapper } = require("../decorators");
-const { contactSchema } = require("../schemas/contactSchema");
 
 const getAllContacts = async (_, res) => {
   const result = await contactsService.listContacts();
@@ -18,19 +17,11 @@ const getContactById = async (req, res) => {
 };
 
 const addContact = async (req, res) => {
-  const { error } = contactSchema.validate(req.body);
-  if (error) {
-    return HttpError(400, error.message);
-  }
   const result = await contactsService.addContact(req.body);
   res.status(201).json(result);
 };
 
 const updateContactById = async (req, res) => {
-  const { error } = contactSchema.validate(req.body);
-  if (error) {
-    return HttpError(400, error.message);
-  }
   const { contactId } = req.params;
   const result = await contactsService.updateContact(contactId, req.body);
   if (!result) {
@@ -41,11 +32,12 @@ const updateContactById = async (req, res) => {
 
 const deleteContactById = async (req, res) => {
   const { contactId } = req.params;
+  console.log(contactId);
   const result = await contactsService.removeContact(contactId);
   if (!result) {
     throw HttpError(404, `Contact with id: ${contactId} not found`);
   }
-  res.json({ message: "Contact deleted" });
+  res.json({ message: `Contact with id: ${contactId} deleted` });
 };
 
 module.exports = {
