@@ -14,6 +14,7 @@ const contactSchema = Joi.object({
     .pattern(/^\(\d{3}\)\s\d{3}-\d{4}$/)
     .required()
     .messages({ "any.required": "missing required phone field" }),
+  favorite: Joi.boolean(),
 });
 
 module.exports = contactSchema;
