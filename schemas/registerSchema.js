@@ -8,6 +8,7 @@ const registerSchema = Joi.object({
   password: Joi.string()
     .required()
     .messages({ "any.required": "missing required password field" }),
+  subscription: Joi.string().valid("starter", "pro", "business"),
 });
 
 module.exports = registerSchema;

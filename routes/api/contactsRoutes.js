@@ -1,9 +1,12 @@
 const express = require("express");
 const contactsController = require("../../controllers/contactControllers");
-const router = express.Router();
 const { validateBody, validateStatusContact } = require("../../decorators");
 const { contactSchema, updateFavoriteSchema } = require("../../schemas");
-const { isValidId } = require("../../middlewares");
+const { isValidId, authenticate } = require("../../middlewares");
+
+const router = express.Router();
+
+router.use(authenticate);
 
 router.get("/", contactsController.getAllContacts);
 
