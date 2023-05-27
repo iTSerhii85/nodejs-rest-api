@@ -4,13 +4,27 @@ const Contact = require("../models/contact");
 
 const getAllContacts = async (req, res) => {
   const { _id: owner } = req.user; // const owner = req.user._id;
+  const { favorite } = req.query;
   const { page = 1, limit = 20 } = req.query;
   const skip = (page - 1) * limit;
-  const result = await Contact.find({ owner }, "name email phone favorite", {
-    skip,
-    limit,
-  }).populate("owner", "email subscription");
-  res.json(result);
+
+  if (favorite) {
+    if (favorite !== "true" && favorite !== "false") {
+      throw HttpError(404, "Favorite value can only be true or false");
+    }
+    const result = await Contact.find(
+      { owner, favorite },
+      "name email phone favorite",
+      { skip, limit }
+    ).populate("owner", "email subscription");
+    res.json(result);
+  } else {
+    const result = await Contact.find({ owner }, "name email phone favorite", {
+      skip,
+      limit,
+    }).populate("owner", "email subscription");
+    res.json(result);
+  }
 };
 
 const getContactById = async (req, res) => {
