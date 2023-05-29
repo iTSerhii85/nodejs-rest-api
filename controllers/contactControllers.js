@@ -1,11 +1,30 @@
-// const contactsService = require("../models/contactService");
 const { HttpError } = require("../helpers");
 const { controllerWrapper } = require("../decorators");
 const Contact = require("../models/contact");
 
-const getAllContacts = async (_, res) => {
-  const result = await Contact.find();
-  res.json(result);
+const getAllContacts = async (req, res) => {
+  const { _id: owner } = req.user; // const owner = req.user._id;
+  const { favorite } = req.query;
+  const { page = 1, limit = 20 } = req.query;
+  const skip = (page - 1) * limit;
+
+  if (favorite) {
+    if (favorite !== "true" && favorite !== "false") {
+      throw HttpError(404, "Favorite value can only be true or false");
+    }
+    const result = await Contact.find(
+      { owner, favorite },
+      "name email phone favorite",
+      { skip, limit }
+    ).populate("owner", "email subscription");
+    res.json(result);
+  } else {
+    const result = await Contact.find({ owner }, "name email phone favorite", {
+      skip,
+      limit,
+    }).populate("owner", "email subscription");
+    res.json(result);
+  }
 };
 
 const getContactById = async (req, res) => {
@@ -18,7 +37,9 @@ const getContactById = async (req, res) => {
 };
 
 const addContact = async (req, res) => {
-  const result = await Contact.create(req.body);
+  const { _id: owner } = req.user; // const owner = req.user._id;
+  const result = await Contact.create({ ...req.body, owner });
+
   res.status(201).json(result);
 };
 
