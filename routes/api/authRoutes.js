@@ -5,13 +5,19 @@ const {
   registerSchema,
   loginSchema,
   updateSubscribeSchema,
+  updateAvatarSchema,
 } = require("../../schemas");
-const { authenticate } = require("../../middlewares");
+const { authenticate, upload } = require("../../middlewares");
 
 const router = express.Router();
 
 //! signUp routes
-router.post("/register", validateBody(registerSchema), authController.register);
+router.post(
+  "/register",
+  upload.single("avatar"), // если в поле avatar приходит файл, сохраняем его в папке avatars.
+  validateBody(registerSchema),
+  authController.register
+);
 
 //! signIn routes
 router.post("/login", validateBody(loginSchema), authController.login);
@@ -29,6 +35,16 @@ router.patch(
   validateBody(updateSubscribeSchema),
   authenticate,
   authController.changeSubscription
+);
+
+// todo update avatar
+router.patch(
+  "/avatars",
+  authenticate,
+  upload.single("avatar"),
+  validateBody(updateAvatarSchema),
+  authenticate,
+  authController.avatarUploadController
 );
 
 module.exports = router;

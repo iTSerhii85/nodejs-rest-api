@@ -3,6 +3,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { HttpError } = require("../helpers");
 const { controllerWrapper } = require("../decorators");
+const gravatar = require("gravatar");
 
 const { SECRET_KEY } = process.env;
 
@@ -13,11 +14,17 @@ const register = async (req, res) => {
     throw HttpError(409, "Email in use");
   }
   const hashPassword = await bcrypt.hash(password, 10);
-  const newUser = await User.create({ ...req.body, password: hashPassword });
+  const avatarURL = gravatar.url(email);
+  const newUser = await User.create({
+    ...req.body,
+    password: hashPassword,
+    avatarURL,
+  });
   res.status(201).json({
     user: {
       email: newUser.email,
       subscription: newUser.subscription,
+      avatarURL: newUser.avatarURL,
     },
   });
 };
@@ -69,10 +76,15 @@ const changeSubscription = async (req, res) => {
   res.json(result);
 };
 
+const avatarUploadController = async (req, res) => {
+  //todo тут закончил
+};
+
 module.exports = {
   register: controllerWrapper(register),
   login: controllerWrapper(login),
   getCurrent: controllerWrapper(getCurrent),
   logout: controllerWrapper(logout),
   changeSubscription: controllerWrapper(changeSubscription),
+  avatarUploadController: controllerWrapper(avatarUploadController),
 };
