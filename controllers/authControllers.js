@@ -4,8 +4,12 @@ const jwt = require("jsonwebtoken");
 const { HttpError } = require("../helpers");
 const { controllerWrapper } = require("../decorators");
 const gravatar = require("gravatar");
+const fs = require("fs/promises");
+const path = require("path");
+const Jimp = require("jimp");
 
 const { SECRET_KEY } = process.env;
+const avatarPath = path.resolve("public", "avatars");
 
 const register = async (req, res) => {
   const { email, password } = req.body;
@@ -76,8 +80,24 @@ const changeSubscription = async (req, res) => {
   res.json(result);
 };
 
-const avatarUploadController = async (req, res) => {
-  //todo тут закончил
+const avatarUpload = async (req, res) => {
+  const { path: oldPath, filename } = req.file;
+  const newPath = path.join(avatarPath, filename);
+
+  const resultUpload = await Jimp.read(oldPath);
+  await resultUpload.resize(250, 250).write(newPath);
+
+  const avatarURL = path.join("avatars", filename);
+  fs.unlink(oldPath);
+
+  const { _id } = req.user;
+  const result = await User.findByIdAndUpdate(
+    _id,
+    { avatarURL },
+    { new: true }
+  );
+
+  res.status(200).json({ avatarURL: result.avatarURL });
 };
 
 module.exports = {
@@ -86,5 +106,5 @@ module.exports = {
   getCurrent: controllerWrapper(getCurrent),
   logout: controllerWrapper(logout),
   changeSubscription: controllerWrapper(changeSubscription),
-  avatarUploadController: controllerWrapper(avatarUploadController),
+  avatarUpload: controllerWrapper(avatarUpload),
 };
