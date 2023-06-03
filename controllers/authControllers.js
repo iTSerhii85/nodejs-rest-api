@@ -8,7 +8,7 @@ const fs = require("fs/promises");
 const path = require("path");
 const Jimp = require("jimp");
 
-const { SECRET_KEY } = process.env;
+const { SECRET_KEY, PORT, SERVER_NAME } = process.env;
 const avatarPath = path.resolve("public", "avatars");
 
 const register = async (req, res) => {
@@ -87,7 +87,7 @@ const avatarUpload = async (req, res) => {
   const resultUpload = await Jimp.read(oldPath);
   await resultUpload.resize(250, 250).write(newPath);
 
-  const avatarURL = path.join("avatars", filename);
+  const avatarURL = path.join(SERVER_NAME, "avatars", filename);
   fs.unlink(oldPath);
 
   const { _id } = req.user;
