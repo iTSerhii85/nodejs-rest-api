@@ -8,7 +8,7 @@ const fs = require("fs/promises");
 const path = require("path");
 const Jimp = require("jimp");
 
-const { SECRET_KEY, PORT, SERVER_NAME } = process.env;
+const { SECRET_KEY, SERVER_NAME } = process.env;
 const avatarPath = path.resolve("public", "avatars");
 
 const register = async (req, res) => {
