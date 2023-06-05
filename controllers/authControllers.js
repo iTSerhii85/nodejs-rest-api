@@ -3,8 +3,13 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { HttpError } = require("../helpers");
 const { controllerWrapper } = require("../decorators");
+const gravatar = require("gravatar");
+const fs = require("fs/promises");
+const path = require("path");
+const Jimp = require("jimp");
 
 const { SECRET_KEY } = process.env;
+const avatarPath = path.resolve("public", "avatars");
 
 const register = async (req, res) => {
   const { email, password } = req.body;
@@ -13,11 +18,17 @@ const register = async (req, res) => {
     throw HttpError(409, "Email in use");
   }
   const hashPassword = await bcrypt.hash(password, 10);
-  const newUser = await User.create({ ...req.body, password: hashPassword });
+  const avatarURL = gravatar.url(email);
+  const newUser = await User.create({
+    ...req.body,
+    password: hashPassword,
+    avatarURL,
+  });
   res.status(201).json({
     user: {
       email: newUser.email,
       subscription: newUser.subscription,
+      avatarURL: newUser.avatarURL,
     },
   });
 };
@@ -69,10 +80,31 @@ const changeSubscription = async (req, res) => {
   res.json(result);
 };
 
+const avatarUpload = async (req, res) => {
+  const { path: oldPath, filename } = req.file;
+  const newPath = path.join(avatarPath, filename);
+
+  const resultUpload = await Jimp.read(oldPath);
+  await resultUpload.resize(250, 250).write(newPath);
+
+  const avatarURL = path.join("avatars", filename);
+  fs.unlink(oldPath);
+
+  const { _id } = req.user;
+  const result = await User.findByIdAndUpdate(
+    _id,
+    { avatarURL },
+    { new: true }
+  );
+
+  res.status(200).json({ avatarURL: result.avatarURL });
+};
+
 module.exports = {
   register: controllerWrapper(register),
   login: controllerWrapper(login),
   getCurrent: controllerWrapper(getCurrent),
   logout: controllerWrapper(logout),
   changeSubscription: controllerWrapper(changeSubscription),
+  avatarUpload: controllerWrapper(avatarUpload),
 };
